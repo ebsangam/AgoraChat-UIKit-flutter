@@ -5,10 +5,25 @@ import 'package:example/messages_page.dart';
 import 'package:flutter/material.dart';
 
 class ChatConfig {
-  static const String appKey = "";
-  static const String userId = "";
-  static const String agoraToken = '';
+  static const String appKey = '411087907#1268520';
+  final String userId;
+  final String agoraToken;
+  ChatConfig({
+    required this.agoraToken,
+    required this.userId,
+  });
 }
+
+final config1 = ChatConfig(
+  userId: '644214f881795885c04dc15a',
+  agoraToken:
+      '007eJxTYFi1tXSDtvbOqDg2zkVb752aVPnH7LvzpJzo9RObJLPOKR5WYDAyMbZMTDRKSktJsjSxNDGwSDFMSTI0MjZIsUhNSTYyX/hDM60hkJHB85g0EyMDKwMjEIL4KgxmacbGZqmmBrppZmbmuoaGqam6FiZmprrGaSmmpgbmFkZGhgYAqEwm+g==',
+);
+final config2 = ChatConfig(
+  userId: '661528aae60a9114f1d5f963',
+  agoraToken:
+      '007eJxTYDj3MHaV5f/g1e0qYfd2L911Sov94dIl6mWnZGNjBAMymZcqMBiZGFsmJholpaUkWZpYmhhYpBimJBkaGRukWKSmJBuZX/+lmdYQyMjQnbSFlZGBlYERCEF8FYZEy6S0ZANzA900MzNTXUPD1FTdpCRTI11Tc/Pk5NQkQwtj01QA1WoojA==',
+);
 
 void main() async {
   assert(ChatConfig.appKey.isNotEmpty,
@@ -52,10 +67,24 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  // empty by default
+  ChatConfig config = ChatConfig(agoraToken: '', userId: '');
+
   ScrollController scrollController = ScrollController();
   ChatConversation? conversation;
-  String _chatId = "";
+
+  // chat id is just another user id
+  final recipientIdController = TextEditingController();
+
   final List<String> _logText = [];
+
+  void setConfig(ChatConfig config, String recipientId) {
+    setState(() {
+      this.config = config;
+      recipientIdController.text = recipientId;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,8 +98,42 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisSize: MainAxisSize.max,
           children: [
             const SizedBox(height: 10),
-            const Text("login userId: ${ChatConfig.userId}"),
-            const Text("agoraToken: ${ChatConfig.agoraToken}"),
+            Text("login userId: ${config.userId}"),
+            Text("agoraToken: ${config.agoraToken}"),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: TextButton(
+                    onPressed: () {
+                      setConfig(config1, config2.userId);
+                    },
+                    style: ButtonStyle(
+                      foregroundColor: MaterialStateProperty.all(Colors.white),
+                      backgroundColor:
+                          MaterialStateProperty.all(Colors.lightBlue),
+                    ),
+                    child: const Text("SET USER 1"),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextButton(
+                    onPressed: () {
+                      setConfig(config2, config1.userId);
+                    },
+                    style: ButtonStyle(
+                      foregroundColor: MaterialStateProperty.all(Colors.white),
+                      backgroundColor:
+                          MaterialStateProperty.all(Colors.lightBlue),
+                    ),
+                    child: const Text("SET USER 2"),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -113,7 +176,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     decoration: const InputDecoration(
                       hintText: "Enter recipient's userId",
                     ),
-                    onChanged: (chatId) => _chatId = chatId,
+                    controller: recipientIdController,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -121,7 +184,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: [
                     TextButton(
                       onPressed: () {
-                        pushToChatPage(_chatId);
+                        pushToChatPage(recipientIdController.text);
                       },
                       style: ButtonStyle(
                         foregroundColor:
@@ -134,7 +197,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     const SizedBox(width: 10),
                     TextButton(
                       onPressed: () {
-                        pushToCustomChatPage(_chatId);
+                        pushToCustomChatPage(recipientIdController.text);
                       },
                       style: ButtonStyle(
                         foregroundColor:
@@ -222,11 +285,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _signIn() async {
     _addLogToConsole('begin sign in...');
-    if (ChatConfig.agoraToken.isNotEmpty) {
+    if (config.agoraToken.isNotEmpty) {
       try {
         await ChatClient.getInstance.loginWithAgoraToken(
-          ChatConfig.userId,
-          ChatConfig.agoraToken,
+          config.userId,
+          config.agoraToken,
         );
         _addLogToConsole('sign in success');
       } on ChatError catch (e) {
